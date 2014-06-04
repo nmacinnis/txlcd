@@ -6,7 +6,6 @@ class Webserver(resource.Resource):
     isLeaf = True
     def __init__(self, logger=None):
         self.logger = logger
-        pass
 
     def render_GET(self, request):
         self.logger.debug(request)

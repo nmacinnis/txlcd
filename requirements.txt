@@ -1,1 +1,2 @@
 Twisted==12.0.0
+sqlalchemy==0.9.1
