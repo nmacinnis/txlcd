@@ -3,6 +3,7 @@ import IPython
 import logging
 import requests
 import threading
+import txroutes
 
 from twisted.internet import reactor
 from twisted.web.server import Site
@@ -10,7 +11,7 @@ from twisted.web.server import Site
 from txlcd.buttonmasher import ButtonMasher
 from txlcd.lcd import MockLcd
 from txlcd.model import Model
-from txlcd.webserver import Webserver
+from txlcd.webserver import Controller
 
 logger = logging.getLogger()
 logger.addHandler(logging.StreamHandler())
@@ -24,9 +25,14 @@ lcd = MockLcd(logger=logger)
 
 button_masher = ButtonMasher(logger=logger, model=model, lcd=lcd)
 
-webserver = Webserver(logger=logger, button_masher=button_masher)
+controller = Controller(logger=logger, button_masher=button_masher)
+dispatcher = txroutes.Dispatcher(logger=logger)
 
-site = Site(webserver)
+dispatcher.connect('get_index', '/', controller=controller,
+        action='get_index', conditions=dict(method=['GET']))
+
+
+site = Site(dispatcher)
 reactor.listenTCP(8090, site)
 
 

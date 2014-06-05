@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import logging
+import txroutes
 
 #from Adafruit_CharLCDPlate import Adafruit_CharLCDPlate
 from twisted.internet import reactor
@@ -8,7 +9,7 @@ from twisted.web.server import Site
 from txlcd.buttonmasher import ButtonMasher
 from txlcd.lcd import MockLcd
 from txlcd.model import Model
-from txlcd.webserver import Webserver
+from txlcd.webserver import Controller
 
 if __name__ == '__main__':
     logger = logging.getLogger()
@@ -23,17 +24,23 @@ if __name__ == '__main__':
 
     button_masher = ButtonMasher(logger=logger, model=model, lcd=lcd)
 
-    webserver = Webserver(logger=logger, button_masher=button_masher)
+    controller = Controller(logger=logger, button_masher=button_masher)
+    dispatcher = txroutes.Dispatcher(logger=logger)
 
-    site = Site(webserver)
+    dispatcher.connect('get_index', '/', controller=controller,
+            action='get_index', conditions=dict(method=['GET']))
+
+
+    site = Site(dispatcher)
     reactor.listenTCP(8090, site)
 
     reactor.callLater(.1, button_masher.start_button_checker)
     reactor.callLater(.1, button_masher.start_screen_lighter)
+
     def stop_threads():
         button_masher.checking = False
         logger.info("shutting down")
-    #reactor.addSystemEventTrigger('before', 'shutdown', lambda: button_masher.checking = False)
+
     reactor.addSystemEventTrigger('before', 'shutdown', stop_threads)
 
     logger.info("starting webserver")
