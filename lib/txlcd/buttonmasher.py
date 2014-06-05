@@ -14,7 +14,7 @@ class ButtonMasher(object):
 
         self.message = model.get_latest_message()
 
-        self.lcd_semaphore = threading.Semaphore()
+        self.lcd_backlight_semaphore = threading.Semaphore()
         self.lcd_time = 0
 
         if self.message:
@@ -56,10 +56,10 @@ class ButtonMasher(object):
         d.addCallback(self.log_result_and_check_again)
 
     def set_lcd_on_time(self, time):
-        self.lcd_semaphore.acquire()
+        self.lcd_backlight_semaphore.acquire()
         if time > self.lcd_time:
             self.lcd_time = time
-        self.lcd_semaphore.release()
+        self.lcd_backlight_semaphore.release()
 
     def start_screen_lighter(self):
         thread = threading.Thread(target=self.light_lcd_screen)
@@ -69,20 +69,26 @@ class ButtonMasher(object):
 
     def light_lcd_screen(self):
         while self.checking:
-            self.lcd_semaphore.acquire()
+            self.lcd_backlight_semaphore.acquire()
             if self.lcd_time > 0:
                 self.lcd_time -= 1
                 self.lcd.backlight(self.lcd.TEAL)
             else:
                 self.lcd.backlight(self.lcd.OFF)
-            self.lcd_semaphore.release()
+            self.lcd_backlight_semaphore.release()
             threading._sleep(1)
 
     def display_current_message(self):
         if not self.message:
             self.logger.debug('nothing to display')
+            return
         else:
             self.logger.debug('about to display: %s' % self.message.message_text)
+            d = threads.deferToThread(self.display_current_message_in_thread)
+            return d
+
+    def display_current_message_in_thread(self):
+        message_to_display = self.message
         rows = (len(self.message.message_text) / 16) + 1
         lines = []
         for i in xrange(rows):
@@ -98,6 +104,8 @@ class ButtonMasher(object):
         self.lcd.clear()
         self.set_lcd_on_time(3 + 3 * len(strings))
         for s in strings:
+            if self.message != message_to_display:
+                return
             self.lcd.clear()
             self.lcd.message(s)
             threading._sleep(3)

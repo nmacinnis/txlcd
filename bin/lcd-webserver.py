@@ -29,7 +29,8 @@ if __name__ == '__main__':
 
     dispatcher.connect('get_index', '/', controller=controller,
             action='get_index', conditions=dict(method=['GET']))
-
+    dispatcher.connect('get_message', '/new', controller=controller,
+            action='get_message', conditions=dict(method=['GET']))
 
     site = Site(dispatcher)
     reactor.listenTCP(8090, site)
