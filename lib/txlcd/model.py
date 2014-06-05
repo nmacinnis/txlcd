@@ -55,6 +55,9 @@ class Model(object):
             message = Message(message_text=message_text)
             session.add(message)
             session.commit()
+            #session.expunge(message)
+        #return message
+        return self.get_latest_message()
 
     def delete_message(self, message_id):
         with self._autoclosing_session() as session:
@@ -78,3 +81,6 @@ class Message(Base):
         sqlalchemy.types.String(1024),
         nullable=False
     )
+
+    def __str__(self):
+        return '%s: %s' % (self.message_id, self.message_text)
