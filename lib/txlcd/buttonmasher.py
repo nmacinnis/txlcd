@@ -120,14 +120,14 @@ class ButtonMasher(object):
         next_message = self.model.get_next_message(self.message.message_id)
         if next_message:
             self.message = next_message
-            self.logger.debug('current message is %s' % self.message_text)
+            self.logger.debug('current message is %s' % self.message.message_text)
         self.display_current_message()
 
     def previous_message(self):
         previous_message = self.model.get_previous_message(self.message.message_id)
         if previous_message:
             self.message = previous_message
-            self.logger.debug('current message is %s' % self.message_text)
+            self.logger.debug('current message is %s' % self.message.message_text)
         self.display_current_message()
 
     def delete_current_message(self):
