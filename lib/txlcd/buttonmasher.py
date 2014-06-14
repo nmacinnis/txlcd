@@ -1,4 +1,5 @@
 import threading
+import time
 
 from twisted.internet import reactor, threads
 
@@ -16,6 +17,7 @@ class ButtonMasher(object):
         self.lcd_time = 0
 
         self.message = model.get_latest_message()
+        self.message_set_time = 0
         self.display_current_message()
 
     def log_result_and_check_again(self, result):
@@ -84,7 +86,8 @@ class ButtonMasher(object):
             return d
 
     def display_current_message_in_thread(self):
-        message_to_display = self.message
+        time_called = time.time()
+        self.message_set_time = time_called
         rows = (len(self.message.message_text) / 16) + 1
         lines = []
         for i in xrange(rows):
@@ -96,17 +99,17 @@ class ButtonMasher(object):
         size = len(lines)
         pairs = zip(lines[0 : size-1], lines[1:size])
         strings = ['\n'.join(p) for p in pairs]
+        strings.append(strings[0])
 
-        self.lcd.clear()
-        self.set_lcd_on_time(3 + 3 * len(strings))
+        self.set_lcd_on_time(3 * len(strings))
+
         for s in strings:
-            if self.message != message_to_display:
+            if self.message_set_time > time_called:
                 return
             self.lcd.clear()
+            self.logger.debug('displaying:\n%s' % s)
             self.lcd.message(s)
             threading._sleep(3)
-        self.lcd.message(strings[0])
-
 
     def add_new_message(self, message_text):
         self.message = self.model.add_message(message_text)
