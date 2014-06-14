@@ -12,15 +12,11 @@ class ButtonMasher(object):
 
         self.checking = True
 
-        self.message = model.get_latest_message()
-
         self.lcd_backlight_semaphore = threading.Semaphore()
         self.lcd_time = 0
 
-        if self.message:
-            self.logger.debug('buttonmasher initalized with message %s' % self.message.message_text)
-        else:
-            self.logger.debug('button masher initialized with no message')
+        self.message = model.get_latest_message()
+        self.display_current_message()
 
     def log_result_and_check_again(self, result):
         if result == self.lcd.SELECT:
