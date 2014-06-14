@@ -29,10 +29,10 @@ class ButtonMasher(object):
             pass
         elif result == self.lcd.DOWN:
             self.logger.debug('\nbutton pressed: down\n')
-            self.previous_message()
+            self.next_message()
         elif result == self.lcd.UP:
             self.logger.debug('\nbutton pressed: up\n')
-            self.next_message()
+            self.previous_message()
         elif result == self.lcd.LEFT:
             self.logger.debug('\nbutton pressed: left\n')
             pass
